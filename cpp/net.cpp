@@ -74,10 +74,10 @@ namespace Seaside {
             layer_primed = layer_input.map(this->maps[this->active_funcs[i] + "_prime"]);
 
             // Calculate layer delta errors
-            Mat cur_delta_error = this->layers[i].transpose();
-            cur_delta_error = cur_delta_error.remove_row(cur_delta_error.dim().first - 1);
-            cur_delta_error = cur_delta_error * delta_error;
-            cur_delta_error = cur_delta_error.hadamard(layer_primed);
+            Mat next_delta_error = this->layers[i].transpose();
+            next_delta_error = next_delta_error.remove_row(next_delta_error.dim().first - 1);
+            next_delta_error = next_delta_error * delta_error;
+            next_delta_error = next_delta_error.hadamard(layer_primed);
 
             // Calculate layer weight deltas
             Vec bias({});
@@ -90,7 +90,7 @@ namespace Seaside {
             cur_weight_delta = cur_weight_delta * -eta;
             cur_weight_delta = delta_error * cur_weight_delta;
 
-            delta_error = cur_delta_error;
+            delta_error = next_delta_error;
 
             // Update Weights
             this->layers[i] = this->layers[i] + cur_weight_delta;
@@ -128,31 +128,33 @@ namespace Seaside {
 
             Mat gradient = Mat::to_matrix(cost_function_gradient).transpose();
 
-            Mat delta_error = (gradient * soft_max_jacobian).transpose(); // N * 1
+            Mat delta_error = (gradient * soft_max_jacobian).transpose();
 
-            for (int i = this->layers.size() - 1; i >= 0; i--){
+            for (int i = this->layers.size() - 1; i >= 1; i--){
                 // Maintain layer inputs
-                Mat layer_input = Mat::to_matrix(layer_data[i][example_num]);
-                Mat layer_primed = layer_input.map(this->maps[this->active_funcs[i] + "_prime"]);
+                Mat this_layer_input = Mat::to_matrix(layer_data[i + 1][example_num]);
+                Mat next_layer_input = Mat::to_matrix(layer_data[i][example_num]);
+
+                Mat next_layer_output = next_layer_input.map(this->maps[this->active_funcs[i - 1]]);
+                Mat next_layer_input_primed = next_layer_input.map(this->maps[this->active_funcs[i - 1] + "_prime"]);
 
                 // Calculate layer delta errors
-                Mat cur_delta_error = this->layers[i].transpose();
-                cur_delta_error = cur_delta_error.remove_row(cur_delta_error.dim().first - 1);
-                cur_delta_error = cur_delta_error * delta_error;
-                cur_delta_error = cur_delta_error.hadamard(layer_primed);
+                Mat next_delta_error = this->layers[i].transpose();
+                next_delta_error = next_delta_error.remove_row(next_delta_error.dim().first - 1);
+                next_delta_error = next_delta_error * delta_error;
+                next_delta_error = next_delta_error.hadamard(next_layer_input_primed);
 
                 // Calculate layer weight deltas
                 Vec bias({});
-                bias.set(layer_input.dim().second, 1.0);
+                bias.set(next_layer_output.dim().second, 1.0);
 
-                Mat cur_weight_delta = layer_input;
+                Mat cur_weight_delta = next_layer_output;
                 cur_weight_delta = cur_weight_delta.transpose();
-                cur_weight_delta = cur_weight_delta.map(this->maps[this->active_funcs[i]]);
                 cur_weight_delta = cur_weight_delta.append_column(bias);
                 cur_weight_delta = cur_weight_delta * -eta;
                 cur_weight_delta = delta_error * cur_weight_delta;
 
-                delta_error = cur_delta_error;
+                delta_error = next_delta_error;
 
                 // Update Weights
                 this->layers[i] = this->layers[i] + cur_weight_delta;
@@ -166,6 +168,14 @@ namespace Seaside {
         if (optimizer.compare("mse") == 0){
             for (int i = 0; i < epochs; i++){
                 train_mse(input_data, target_data, eta);
+
+                if (i % (int)(epochs / 10) == 0 && i != 0)
+                    std::cout << ((i / (epochs + 0.0)) * 100) << "% Complete!" << std::endl;
+            }
+        }
+        else if (optimizer.compare("xent") == 0){
+            for (int i = 0; i < epochs; i++){
+                train_xent(input_data, target_data, eta);
 
                 if (i % (int)(epochs / 10) == 0 && i != 0)
                     std::cout << ((i / (epochs + 0.0)) * 100) << "% Complete!" << std::endl;

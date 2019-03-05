@@ -2,7 +2,7 @@
 
 namespace Seaside {
 	Mat::Mat(int m, int n){
-		this->precision = 2;
+		this->precision = 5;
 
 		for (int i = 0; i < n; i++){
 			Vec temp({});

@@ -3,7 +3,7 @@
 namespace Seaside {
 	Vec::Vec(std::vector<float> data){
 		this->data = data;
-		this->precision = 2;
+		this->precision = 5;
 
 		srand((unsigned int)time(NULL));
 	}
