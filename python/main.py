@@ -9,10 +9,10 @@ if __name__ == '__main__':
     target_data = Mat(2, 8)
     target_data.data = [Vec([1, 0]), Vec([0, 1]), Vec([1, 0]), Vec([0, 1]), Vec([1, 0]), Vec([0, 1]), Vec([1, 0]), Vec([0, 1])]
 
-    # neural_net.learn('xent', input_data, target_data, 0.1, 10000)
+    neural_net.learn('xent', input_data, target_data, 0.1, 10000)
 
     # neural_net.save('flowers_xent_relu.txt')
-    neural_net.load('flowers_xent_relu.txt')
+    #neural_net.load('flowers_xent_relu.txt')
 
     test_input = Vec([4.5, 1]).to_mat()
     test_output = neural_net.query(input_data)

@@ -18,7 +18,7 @@ namespace Seaside {
             std::vector<Mat> feed_forward(Mat input_data);
         
             void train_mse(Mat input_data, Mat target_data, float eta);
-            void train_xent(Mat input_data, Mat_target_data, float eta);
+            void train_xent(Mat input_data, Mat target_data, float eta);
 
             void learn(std::string optimizer, Mat input_data, Mat target_data, float eta, int epochs);
 

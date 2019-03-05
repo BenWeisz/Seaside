@@ -399,4 +399,8 @@ namespace Seaside {
 
 		return temp;
 	}
+
+	Mat Mat::clone(){
+		return *this;
+	}
 }

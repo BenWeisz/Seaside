@@ -692,6 +692,8 @@ class Net:
 
                     deltas.insert(0, delta)
 
+                    print(i)
+
                     i -= 1             
 
                 # Generate All Weight Deltas

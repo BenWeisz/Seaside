@@ -35,6 +35,15 @@ namespace Seaside {
 
 			Mat map(Vec(*f)(Vec v));
 
+			Mat clone();
+
 			void print();
+
+			static Mat to_matrix(Vec v){
+				Mat out(0, 0);
+				out.set_columns({v});
+
+				return out;
+			}
 	};
 }
