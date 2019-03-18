@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "net.h"
 
 namespace Seaside {
@@ -187,5 +189,134 @@ namespace Seaside {
         }
 
         std::cout << "Learning Complete!" << std::endl;
+    }
+
+    void Net::save(const char *file_name){
+        FILE *write_file = fopen(file_name, "wb");
+        if (write_file == nullptr){
+            std::cout << "SAVING: The model could not be saved!" << std::endl;
+            exit(1);
+        }
+
+        // Write constant to check if proper file is being loaded
+        int constant = CONST_SEASIDE_MODEL;
+        Fwrite(&constant, sizeof(int), 1, write_file);
+
+        // Write out the number of layers that this model has
+        int num_layers = this->layers.size();
+        Fwrite(&num_layers, sizeof(int), 1, write_file);
+
+        // Write out the numbers corresponding to this model's layers' activation functions
+        // 0 : Sigmoid
+        // 1 : Softmax
+        // 2 : Relu
+
+        for (int i = 0; i < num_layers; i++){
+            int activation_id;
+
+            if (this->active_funcs[i].compare("sigmoid") == 0)
+                activation_id = 0;
+            else if (this->active_funcs[i].compare("soft_max") == 0)
+                activation_id = 1;
+            else if (this->active_funcs[i].compare("relu") == 0)
+                activation_id = 2;
+
+            Fwrite(&activation_id, sizeof(int), 1, write_file);
+        }
+
+        // Write out layer weights (Down column and across)
+        for (int i = 0; i < num_layers; i++){
+            std::pair<int, int> dim = this->layers[i].dim();
+
+            Fwrite(&(dim.first), sizeof(int), 1, write_file);
+            Fwrite(&(dim.second), sizeof(int), 1, write_file);
+
+            for (int x = 0; x < dim.second; x++){
+                for (int y = 0; y < dim.first; y++){
+                    float weight = this->layers[i][x][y];
+                    Fwrite(&weight, sizeof(float), 1, write_file);
+                }
+            }
+        }
+
+        fclose(write_file);
+    }
+
+    void Net::load(const char *file_name){
+        // Open file for reading
+        FILE *read_file = fopen(file_name, "rb");
+        if (read_file == NULL){
+            std::cout << "LOADING: The model could not be loaded!" << std::endl;
+            exit(1);
+        }
+
+        // Check for Seaside constant
+        int constant;
+        Fread(&constant, sizeof(int), 1, read_file);
+
+        if (constant != CONST_SEASIDE_MODEL){
+            std::cout << "LOADING: Attempted to load a file that is not a Seaside model!" << std::endl;
+            exit(1); 
+        }
+
+        // Get the number of layers that this model has
+        int num_layers;
+        Fread(&num_layers, sizeof(int), 1, read_file);
+
+        // Setup the model's activation functions
+        this->active_funcs.clear();
+        for (int i = 0; i < num_layers; i++){
+            int activation_id;
+            Fread(&activation_id, sizeof(int), 1, read_file);
+
+            if (activation_id == 0)
+                this->active_funcs.push_back("sigmoid");
+            else if (activation_id == 1)
+                this->active_funcs.push_back("soft_max");
+            else if (activation_id == 2)
+                this->active_funcs.push_back("relu");
+        }
+
+        // Read in all the weight layers
+        this->layers.clear();
+        for (int i = 0; i < num_layers; i++){
+            int height, width;
+            Fread(&height, sizeof(int), 1, read_file);
+            Fread(&width, sizeof(int), 1, read_file);
+
+            Mat layer(0, 0);
+            std::vector<Vec> cols;
+            for (int x = 0; x < width; x++){
+                std::vector<float> data;
+                
+                for (int y = 0; y < height; y++){
+                    float val;
+                    Fread(&val, sizeof(float), 1, read_file);
+                    data.push_back(val);
+                }
+
+                Vec col(data);
+                cols.push_back(col);
+            }
+
+            layer.set_columns(cols);
+            this->layers.push_back(layer);
+        }
+
+        fclose(read_file);
+    }
+
+    void Net::Fwrite(const void *ptr, size_t size, size_t count, FILE *stream){
+        if (fwrite(ptr, size, count, stream) == 0){
+            std::cout << "SAVING: The model could not be saved!" << std::endl;
+            exit(1);
+        }   
+    }
+
+    void Net::Fread(void *ptr, size_t size, size_t count, FILE *stream){
+        if (fread(ptr, size, count, stream) == 0){
+            std::cout << "LOADING: The model could not be loaded!" << std::endl;
+            exit(1); 
+        }
     }
 }

@@ -4,13 +4,18 @@
 
 #include "mat.h"
 
+#define CONST_SEASIDE_MODEL 98426124
+
 namespace Seaside {
     class Net {
-        private:
+        public:
             std::vector<Mat> layers;
+        private:
             std::vector<int> schematic;
             std::vector<std::string> active_funcs;
             std::map<std::string, Vec (*)(Vec)> maps; 
+            void Fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
+            void Fread(void *ptr, size_t size, size_t count, FILE *stream);
         public:
             Net(std::vector<int> schematic, std::vector<std::string> active_funcs);
             
@@ -21,6 +26,9 @@ namespace Seaside {
             void train_xent(Mat input_data, Mat target_data, float eta);
 
             void learn(std::string optimizer, Mat input_data, Mat target_data, float eta, int epochs);
+
+            void save(const char *file_name);
+            void load(const char *file_name);
 
             static Vec sigmoid(Vec v){
                 int len = v.len();
