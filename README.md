@@ -12,5 +12,4 @@ Neural Network Library
 
 ## Further work
 - Fix minor issues with MSE
-- Implement state saving and loading
 - Add MNIST example
