@@ -132,7 +132,7 @@ namespace Seaside {
 		}
 	}
 
-	Mat Mat::operator* (float constant){
+	Mat Mat::operator* (double constant){
 		auto this_dim = this->dim();
 
 		Mat temp = *this;
@@ -164,7 +164,7 @@ namespace Seaside {
 		}
 	}
 
-	Mat Mat::operator/ (float constant){
+	Mat Mat::operator/ (double constant){
 		auto this_dim = this->dim();
 
 		Mat temp = *this;
@@ -176,12 +176,12 @@ namespace Seaside {
 		return temp;
 	}
 
-	int Mat::num_chars(float num){
+	int Mat::num_chars(double num){
 		int chars = 0;
 		if (num < 0)
 			chars++;
 
-		float abs_num = std::abs(num);
+		double abs_num = std::abs(num);
 		int abs_floor_num = std::floor(abs_num);
 
 		if (abs_floor_num == 0)
@@ -236,8 +236,8 @@ namespace Seaside {
 			out = "| ";
 
 			for (int x = 0; x < this_dim.second; x++){
-				float num = temp[x][y];
-				float abs_num = std::abs(num);
+				double num = temp[x][y];
+				double abs_num = std::abs(num);
 
 				int abs_floor_num = std::floor(abs_num);
 				out += this->spaces(maxes[x] - this->num_chars(num));
@@ -271,7 +271,7 @@ namespace Seaside {
 		std::cout << out << std::endl;
 	}
 
-	Mat Mat::rand(float max, float min){
+	Mat Mat::rand(double max, double min){
 		Mat temp = *this;
 
 		auto this_dim = this->dim();

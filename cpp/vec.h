@@ -13,29 +13,29 @@ namespace Seaside {
 		private:
 			int precision;
 
-			int num_chars(float num);
+			int num_chars(double num);
 			std::string spaces(int num);
 		public:
-			std::vector<float> data;
+			std::vector<double> data;
 
-			Vec(std::vector<float> data);
+			Vec(std::vector<double> data);
 
 			int len();
 
-			float& operator[] (const int index);
+			double& operator[] (const int index);
 			Vec operator+ (Vec other);
 			Vec operator- (Vec other);
 			Vec operator* (Vec other);
-			Vec operator* (float constant);
+			Vec operator* (double constant);
 			Vec operator/ (Vec other);
-			Vec operator/ (float constant);
+			Vec operator/ (double constant);
 
 			void print();
-			float dot(Vec other);
+			double dot(Vec other);
 
 			Vec map(Vec(*f)(Vec v));
-			Vec rand(float max, float min);
+			Vec rand(double max, double min);
 			Vec clone();
-		    void set(int n, float v);
+		    void set(int n, double v);
 	};
 }

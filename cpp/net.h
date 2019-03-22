@@ -8,9 +8,8 @@
 
 namespace Seaside {
     class Net {
-        public:
-            std::vector<Mat> layers;
         private:
+            std::vector<Mat> layers;
             std::vector<int> schematic;
             std::vector<std::string> active_funcs;
             std::map<std::string, Vec (*)(Vec)> maps; 
@@ -22,10 +21,10 @@ namespace Seaside {
             Mat query(Mat input_data);
             std::vector<Mat> feed_forward(Mat input_data);
         
-            void train_mse(Mat input_data, Mat target_data, float eta);
-            void train_xent(Mat input_data, Mat target_data, float eta);
+            void train_mse(Mat input_data, Mat target_data, double eta);
+            void train_xent(Mat input_data, Mat target_data, double eta);
 
-            void learn(std::string optimizer, Mat input_data, Mat target_data, float eta, int epochs);
+            void learn(std::string optimizer, Mat input_data, Mat target_data, double eta, int epochs);
 
             void save(const char *file_name);
             void load(const char *file_name);
@@ -49,14 +48,14 @@ namespace Seaside {
             }
 
             static Vec soft_max(Vec v){
-                float max_in = -999999;
+                double max_in = -999999;
                 
                 for (int i = 0; i < v.len(); i++){
                     if (v[i] > max_in)
                         max_in = v[i];
                 }
 
-                float exponential_sum = 0;
+                double exponential_sum = 0;
                 for (int i = 0; i < v.len(); i++)
                     exponential_sum += std::exp(v[i] - max_in);
 

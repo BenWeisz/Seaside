@@ -61,7 +61,7 @@ namespace Seaside {
         return layer_data;
     }
 
-    void Net::train_mse(Mat input_data, Mat target_data, float eta){
+    void Net::train_mse(Mat input_data, Mat target_data, double eta){
         std::vector<Mat> layer_data = this->feed_forward(input_data);
 
         Mat layer_input = layer_data[layer_data.size() - 1];
@@ -99,11 +99,12 @@ namespace Seaside {
         }
     }
 
-    void Net::train_xent(Mat input_data, Mat target_data, float eta){
+    void Net::train_xent(Mat input_data, Mat target_data, double eta){
         std::vector<Mat> layer_data = this->feed_forward(input_data);
 
         Mat layer_output = layer_data[layer_data.size() - 1];
         for (int example_num = 0; example_num < (int)(layer_output.dim().second); example_num++){
+
             // Generate Softmax Jacobian
             Vec example_output_in = layer_output[example_num];
             Vec example_target = target_data[example_num];
@@ -164,22 +165,22 @@ namespace Seaside {
         }
     }
 
-    void Net::learn(std::string optimizer, Mat input_data, Mat target_data, float eta, int epochs){
+    void Net::learn(std::string optimizer, Mat input_data, Mat target_data, double eta, int epochs){
         std::cout << "Starting Learning..." << std::endl;
-        
+
         if (optimizer.compare("mse") == 0){
             for (int i = 0; i < epochs; i++){
                 train_mse(input_data, target_data, eta);
-
-                if (i % (int)(epochs / 10) == 0 && i != 0)
+    
+                if (i != 0 && i % (int)(epochs / 10) == 0)
                     std::cout << ((i / (epochs + 0.0)) * 100) << "% Complete!" << std::endl;
             }
         }
         else if (optimizer.compare("xent") == 0){
             for (int i = 0; i < epochs; i++){
                 train_xent(input_data, target_data, eta);
-
-                if (i % (int)(epochs / 10) == 0 && i != 0)
+                
+                if (i != 0 && i % (int)(epochs / 10.0) == 0)
                     std::cout << ((i / (epochs + 0.0)) * 100) << "% Complete!" << std::endl;
             }
         }
@@ -233,8 +234,8 @@ namespace Seaside {
 
             for (int x = 0; x < dim.second; x++){
                 for (int y = 0; y < dim.first; y++){
-                    float weight = this->layers[i][x][y];
-                    Fwrite(&weight, sizeof(float), 1, write_file);
+                    double weight = this->layers[i][x][y];
+                    Fwrite(&weight, sizeof(double), 1, write_file);
                 }
             }
         }
@@ -287,11 +288,11 @@ namespace Seaside {
             Mat layer(0, 0);
             std::vector<Vec> cols;
             for (int x = 0; x < width; x++){
-                std::vector<float> data;
+                std::vector<double> data;
                 
                 for (int y = 0; y < height; y++){
-                    float val;
-                    Fread(&val, sizeof(float), 1, read_file);
+                    double val;
+                    Fread(&val, sizeof(double), 1, read_file);
                     data.push_back(val);
                 }
 

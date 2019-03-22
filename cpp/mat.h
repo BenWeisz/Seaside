@@ -5,7 +5,7 @@ namespace Seaside {
 		private:
 			int precision;
 
-			int num_chars(float num);
+			int num_chars(double num);
 			std::string spaces(int num);
 		public:
 			std::vector<Vec> data;
@@ -19,12 +19,12 @@ namespace Seaside {
 			Mat operator+ (Mat other);
 			Mat operator- (Mat other);
 			Mat operator* (Mat other);
-			Mat operator* (float constant);
+			Mat operator* (double constant);
 			Mat operator/ (Mat other);
-			Mat operator/ (float constant);
+			Mat operator/ (double constant);
 
 			Mat hadamard (Mat other);
-			Mat rand(float max, float min);
+			Mat rand(double max, double min);
 			Mat append_column(Vec col);
 			Mat append_row(Vec row);
 			Mat remove_column(int col);

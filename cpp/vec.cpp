@@ -1,7 +1,7 @@
 #include "vec.h"
 
 namespace Seaside {
-	Vec::Vec(std::vector<float> data){
+	Vec::Vec(std::vector<double> data){
 		this->data = data;
 		this->precision = 5;
 
@@ -12,7 +12,7 @@ namespace Seaside {
 		return this->data.size();
 	}
 
-	float& Vec::operator[] (const int index){
+	double& Vec::operator[] (const int index){
 		return this->data[index];
 	}
 
@@ -76,7 +76,7 @@ namespace Seaside {
 		}
 	}
 
-	Vec Vec::operator* (float constant){
+	Vec Vec::operator* (double constant){
 		int this_len = this->len();
 
 		Vec temp = *this;
@@ -108,7 +108,7 @@ namespace Seaside {
 		}
 	}
 
-	Vec Vec::operator/ (float constant){
+	Vec Vec::operator/ (double constant){
 		int this_len = this->len();
 
 		Vec temp = *this;
@@ -120,12 +120,12 @@ namespace Seaside {
 		return temp;
 	}
 
-	int Vec::num_chars(float num){
+	int Vec::num_chars(double num){
 		int chars = 0;
 		if (num < 0)
 			chars++;
 
-		float abs_num = std::abs(num);
+		double abs_num = std::abs(num);
 		int abs_floor_num = std::floor(abs_num);
 
 		if (abs_floor_num == 0)
@@ -170,8 +170,8 @@ namespace Seaside {
 		for (int i = 0; i < this_len; i++){
 			out = "| ";
 
-			float num = temp[i];
-			float abs_num = std::abs(num);
+			double num = temp[i];
+			double abs_num = std::abs(num);
 			int abs_floor_num = std::floor(abs_num);
 
 			out += temp.spaces(max_chars - temp.num_chars(num));
@@ -202,7 +202,7 @@ namespace Seaside {
 		std::cout << out << std::endl;
 	}
 
-	float Vec::dot(Vec other){
+	double Vec::dot(Vec other){
 		int this_len = this->len();
 		int other_len = other.len();
 		if (this_len != other_len){
@@ -213,7 +213,7 @@ namespace Seaside {
 		} else {
 			Vec temp = *this;
 
-			float sum = 0.0f;
+			double sum = 0.0f;
 			for (int i = 0; i < this_len; i++){
 				sum += temp[i] * other[i];
 			}
@@ -227,13 +227,13 @@ namespace Seaside {
 		return f(temp);
 	}
 
-	Vec Vec::rand(float max, float min){
+	Vec Vec::rand(double max, double min){
 		int this_len = this->len();
 
 		Vec temp = *this;
 
 		for (int i = 0; i < this_len; i++){
-			float r = (float)std::rand() / RAND_MAX;
+			double r = (double)std::rand() / RAND_MAX;
 
 			temp[i] = min + (r * (max - min));
 		}
@@ -245,8 +245,8 @@ namespace Seaside {
 		return *this;
 	}
 
-	void Vec::set(int n, float v){
-		std::vector<float> data;
+	void Vec::set(int n, double v){
+		std::vector<double> data;
 
 		for (int i = 0; i < n; i++)
 			data.push_back(v);
