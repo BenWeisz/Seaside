@@ -14,6 +14,8 @@ namespace Seaside {
         this->maps.insert(std::make_pair<std::string, Vec (*)(Vec)>("soft_max_prime", Net::soft_max_prime));
         this->maps.insert(std::make_pair<std::string, Vec (*)(Vec)>("relu", Net::relu));
         this->maps.insert(std::make_pair<std::string, Vec (*)(Vec)>("relu_prime", Net::relu_prime));
+        this->maps.insert(std::make_pair<std::string, Vec (*)(Vec)>("tanh", Net::htan));
+        this->maps.insert(std::make_pair<std::string, Vec (*)(Vec)>("tanh_prime", Net::tanh_prime));
 
         // Create the weight layers for the neural network.
         for (int i = 0; i < (int)(this->schematic.size() - 1); i++){
@@ -100,10 +102,16 @@ namespace Seaside {
     }
 
     void Net::train_xent(Mat input_data, Mat target_data, double eta){
+        std::cout << "Started Feed Forward!" << std::endl;
         std::vector<Mat> layer_data = this->feed_forward(input_data);
+        std::cout << "Feed Forward Complete!" << std::endl;
 
         Mat layer_output = layer_data[layer_data.size() - 1];
-        for (int example_num = 0; example_num < (int)(layer_output.dim().second); example_num++){
+        
+        int num_examples = layer_output.dim().second;
+        for (int example_num = 0; example_num < num_examples; example_num++){
+            if ((example_num + 1) % (num_examples / 100) == 0)
+                metrics((example_num + 1.0) / num_examples);
 
             // Generate Softmax Jacobian
             Vec example_output_in = layer_output[example_num];
@@ -178,10 +186,9 @@ namespace Seaside {
         }
         else if (optimizer.compare("xent") == 0){
             for (int i = 0; i < epochs; i++){
+                std::cout << "Epoch " << (i + 1) << std::endl;
                 train_xent(input_data, target_data, eta);
-                
-                if (i != 0 && i % (int)(epochs / 10.0) == 0)
-                    std::cout << ((i / (epochs + 0.0)) * 100) << "% Complete!" << std::endl;
+                std::cout << std::endl;
             }
         }
         else {
@@ -211,6 +218,7 @@ namespace Seaside {
         // 0 : Sigmoid
         // 1 : Softmax
         // 2 : Relu
+        // 3 : Tanh
 
         for (int i = 0; i < num_layers; i++){
             int activation_id;
@@ -221,6 +229,8 @@ namespace Seaside {
                 activation_id = 1;
             else if (this->active_funcs[i].compare("relu") == 0)
                 activation_id = 2;
+            else if (this->active_funcs[i].compare("tanh") == 0)
+                activation_id = 3;
 
             Fwrite(&activation_id, sizeof(int), 1, write_file);
         }
@@ -276,6 +286,8 @@ namespace Seaside {
                 this->active_funcs.push_back("soft_max");
             else if (activation_id == 2)
                 this->active_funcs.push_back("relu");
+            else if (activation_id == 3)
+                this->active_funcs.push_back("tanh");
         }
 
         // Read in all the weight layers
@@ -319,5 +331,14 @@ namespace Seaside {
             std::cout << "LOADING: The model could not be loaded!" << std::endl;
             exit(1); 
         }
+    }
+
+    void Net::metrics(double percent){
+        int val = (int) (percent * 100);
+        int lpad = (int) (percent * 60);
+        int rpad = 60 - lpad;
+
+        printf ("\r%3d%% [%.*s%*s]", val, lpad, "============================================================", rpad, "");
+        fflush (stdout);
     }
 }

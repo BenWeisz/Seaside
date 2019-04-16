@@ -15,6 +15,7 @@ namespace Seaside {
             std::map<std::string, Vec (*)(Vec)> maps; 
             void Fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
             void Fread(void *ptr, size_t size, size_t count, FILE *stream);
+            void metrics(double percent);
         public:
             Net(std::vector<int> schematic, std::vector<std::string> active_funcs);
             
@@ -84,6 +85,20 @@ namespace Seaside {
             static Vec relu_prime(Vec v){
                 for (int i = 0; i < v.len(); i++)
                     v[i] = std::exp(v[i]) / (1.0 + std::exp(v[i]));
+
+                return v;
+            }
+
+            static Vec htan(Vec v){
+                for (int i = 0; i < v.len(); i++)
+                    v[i] = (std::exp(2.0 * v[i]) - 1.0) / (std::exp(2.0 * v[i]) + 1.0);
+
+                return v;
+            }
+
+            static Vec tanh_prime(Vec v){
+                for (int i = 0; i < v.len(); i++)
+                    v[i] = (4 * std::exp(2.0 * v[i])) / ((std::exp(2.0 * v[i]) + 1) * (std::exp(2.0 * v[i]) + 1));
 
                 return v;
             }

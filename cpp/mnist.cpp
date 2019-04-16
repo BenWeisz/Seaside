@@ -1,4 +1,6 @@
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
 
 #include "net.h"
 
@@ -7,27 +9,35 @@ using namespace Seaside;
 std::vector<Mat> prepare_dataset(const char *images, const char *labels);
 void Fread(void *ptr, size_t size, size_t count, FILE *stream);
 int swap_endian(int num);
-Vec normalize(Vec v);
 double check_accuracy(Mat output, Mat correct_output);
 
+Vec normalize_relu(Vec v);
+Vec normalize_tanh(Vec v);
+
 int main(){
+    // Randomize
+    std::srand(std::time(NULL));
+
     // Prepare the dataset
     auto data_set = prepare_dataset("train-images.idx3-ubyte", "train-labels.idx1-ubyte");
     
     // Normalize the input values
     Mat input_data = data_set[0];
-    input_data = input_data.map(normalize);
+    input_data = input_data.map(normalize_relu);
 
     Mat target_data = data_set[1];
 
-    Net mnist_model({784, 16, 16, 10}, {"relu", "relu", "soft_max"});
+    Net mnist_model({784, 16, 10}, {"relu", "soft_max"});
 
     // Train the model
-    mnist_model.learn("xent", input_data, target_data, 0.01, 10);
+    mnist_model.learn("xent", input_data, target_data, 0.01, 5);
 
     // Test the model's preformance
     auto test_set = prepare_dataset("t10k-images.idx3-ubyte", "t10k-labels.idx1-ubyte");
-    Mat test_output = mnist_model.query(test_set[0]);
+    Mat test_input = test_set[0];
+    test_input = test_input.map(normalize_relu);
+
+    Mat test_output = mnist_model.query(test_input);
 
     std::cout << "Accuracy: " << check_accuracy(test_output, test_set[1]) << "%" << std::endl;
 
@@ -63,7 +73,7 @@ double check_accuracy(Mat output, Mat correct_output){
             correct++;
     }
 
-    return (correct + 0.0) / (10000.0);
+    return (correct + 0.0) / (100.0);
 }
 
 std::vector<Mat> prepare_dataset(const char *images_file_name, const char *labels_file_name){
@@ -191,9 +201,16 @@ int swap_endian(int num){
     return swapped_num;
 }
 
-Vec normalize(Vec v){
+Vec normalize_relu(Vec v){
     for (int i = 0; i < v.len(); i++)
         v[i] = v[i] / 255.0;
+
+    return v;
+}
+
+Vec normalize_tanh(Vec v){
+    for (int i = 0; i < v.len(); i++)
+        v[i] = ((v[i] / 255.0) * 2.0) - 1.0;
 
     return v;
 }
