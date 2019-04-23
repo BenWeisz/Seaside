@@ -6,6 +6,7 @@ namespace Seaside {
     Net::Net(std::vector<int> schematic, std::vector<std::string> active_funcs){
         this->schematic = schematic;
         this->active_funcs = active_funcs;
+        this->metrics_type = METRICS_ALL;
         
         // Add all activation functions to a map.
         this->maps.insert(std::make_pair<std::string, Vec (*)(Vec)>("sigmoid", Net::sigmoid));
@@ -58,6 +59,8 @@ namespace Seaside {
             layer_data.push_back(cur_layer);
 
             cur_layer = cur_layer.map(this->maps[this->active_funcs[i]]);
+
+            std::cout << i << std::endl;
         }
 
         return layer_data;
@@ -73,6 +76,9 @@ namespace Seaside {
         Mat delta_error = layer_primed.hadamard(layer_output - target_data);
 
         for (int i = this->layers.size() - 1; i >= 0; i--){
+            if (this->metrics_type > METRICS_MIN)
+                this->metrics((this->layers.size() - i + 0.0) / this->layers.size());
+
             // Maintain layer inputs
             layer_input = layer_data[i];
             layer_primed = layer_input.map(this->maps[this->active_funcs[i] + "_prime"]);
@@ -102,16 +108,19 @@ namespace Seaside {
     }
 
     void Net::train_xent(Mat input_data, Mat target_data, double eta){
-        std::cout << "Started Feed Forward!" << std::endl;
         std::vector<Mat> layer_data = this->feed_forward(input_data);
-        std::cout << "Feed Forward Complete!" << std::endl;
 
         Mat layer_output = layer_data[layer_data.size() - 1];
         
         int num_examples = layer_output.dim().second;
         for (int example_num = 0; example_num < num_examples; example_num++){
-            if ((example_num + 1) % (num_examples / 100) == 0)
-                metrics((example_num + 1.0) / num_examples);
+            if (this->metrics_type > METRICS_MIN){
+                if (num_examples >= 100) {
+                    if ((example_num + 1) % (num_examples / 100) == 0)
+                        metrics((example_num + 1.0) / num_examples);
+                }
+                else metrics((example_num + 1.0) / num_examples);
+            }
 
             // Generate Softmax Jacobian
             Vec example_output_in = layer_output[example_num];
@@ -173,22 +182,28 @@ namespace Seaside {
         }
     }
 
-    void Net::learn(std::string optimizer, Mat input_data, Mat target_data, double eta, int epochs){
+    void Net::learn(std::string optimizer, Mat input_data, Mat target_data, double eta, int epochs, int batch_size){
         std::cout << "Starting Learning..." << std::endl;
 
         if (optimizer.compare("mse") == 0){
             for (int i = 0; i < epochs; i++){
+                if (this->metrics_type > METRICS_NONE)
+                    std::cout << "Epoch " << (i + 1) << std::endl;
+                    
                 train_mse(input_data, target_data, eta);
-    
-                if (i != 0 && i % (int)(epochs / 10) == 0)
-                    std::cout << ((i / (epochs + 0.0)) * 100) << "% Complete!" << std::endl;
             }
         }
         else if (optimizer.compare("xent") == 0){
             for (int i = 0; i < epochs; i++){
-                std::cout << "Epoch " << (i + 1) << std::endl;
-                train_xent(input_data, target_data, eta);
-                std::cout << std::endl;
+                if (this->metrics_type > METRICS_NONE)
+                    std::cout << "Epoch " << (i + 1) << std::endl;
+                    
+                auto batch = mini_batch(input_data, target_data, batch_size);
+
+                train_xent(batch[0], batch[1], eta);
+
+                if (this->metrics_type > METRICS_MIN)
+                    std::cout << std::endl;
             }
         }
         else {
@@ -317,6 +332,30 @@ namespace Seaside {
         }
 
         fclose(read_file);
+    }
+
+    std::vector<Mat> Net::mini_batch(Mat input_data, Mat target_data, int size){
+        std::vector<Vec> input_cols;
+        std::vector<Vec> target_cols;
+
+        for (int i = 0; i < size; i++){
+            int randi = std::rand() % input_data.dim().second;
+
+            input_cols.push_back(input_data[randi]);
+            target_cols.push_back(target_data[randi]);
+        }
+
+        Mat input(0, 0);
+        Mat target(0, 0);
+
+        input.set_columns(input_cols);
+        target.set_columns(target_cols);
+
+        std::vector<Mat> batch;
+        batch.push_back(input);
+        batch.push_back(target);
+
+        return batch;
     }
 
     void Net::Fwrite(const void *ptr, size_t size, size_t count, FILE *stream){

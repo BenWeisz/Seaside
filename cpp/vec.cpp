@@ -4,8 +4,6 @@ namespace Seaside {
 	Vec::Vec(std::vector<double> data){
 		this->data = data;
 		this->precision = 5;
-
-		srand((unsigned int)time(NULL));
 	}
 
 	int Vec::len(){

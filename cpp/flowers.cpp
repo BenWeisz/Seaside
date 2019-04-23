@@ -5,7 +5,8 @@
 using namespace Seaside;
 
 int main(){
-	Net net({2, 3, 2}, {"relu", "soft_max"});
+	Net net({2, 3, 2}, {"sigmoid", "sigmoid"});
+	net.metrics_type = METRICS_NONE;
 
 	Mat input_data(2, 8);
 	input_data.set_columns({Vec({3, 1.5}), Vec({2, 1}), 
@@ -19,7 +20,7 @@ int main(){
 	  						 Vec({1, 0}), Vec({0, 1}),
 	   						 Vec({1, 0}), Vec({0, 1})});
 
-	net.learn("xent", input_data, target_data, 0.01, 10000);
+	net.learn("mse", input_data, target_data, 0.1, 10000, 8);
 	
 	Mat test_output = net.query(input_data);
 	test_output.print();

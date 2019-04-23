@@ -5,6 +5,9 @@
 #include "mat.h"
 
 #define CONST_SEASIDE_MODEL 98426124
+#define METRICS_NONE 0
+#define METRICS_MIN  1
+#define METRICS_ALL  2
 
 namespace Seaside {
     class Net {
@@ -17,6 +20,8 @@ namespace Seaside {
             void Fread(void *ptr, size_t size, size_t count, FILE *stream);
             void metrics(double percent);
         public:
+            int metrics_type;
+        public:
             Net(std::vector<int> schematic, std::vector<std::string> active_funcs);
             
             Mat query(Mat input_data);
@@ -25,10 +30,12 @@ namespace Seaside {
             void train_mse(Mat input_data, Mat target_data, double eta);
             void train_xent(Mat input_data, Mat target_data, double eta);
 
-            void learn(std::string optimizer, Mat input_data, Mat target_data, double eta, int epochs);
+            void learn(std::string optimizer, Mat input_data, Mat target_data, double eta, int epochs, int batch_size);
 
             void save(const char *file_name);
             void load(const char *file_name);
+            
+            std::vector<Mat> mini_batch(Mat input_data, Mat target_data, int size);
 
             static Vec sigmoid(Vec v){
                 int len = v.len();

@@ -27,10 +27,10 @@ int main(){
 
     Mat target_data = data_set[1];
 
-    Net mnist_model({784, 16, 10}, {"relu", "soft_max"});
+    Net mnist_model({784, 16, 10}, {"relu", "softmax"});
 
     // Train the model
-    mnist_model.learn("xent", input_data, target_data, 0.01, 5);
+    mnist_model.learn("xent", input_data, target_data, 0.01, 100, 1);
 
     // Test the model's preformance
     auto test_set = prepare_dataset("t10k-images.idx3-ubyte", "t10k-labels.idx1-ubyte");
